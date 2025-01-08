@@ -1,0 +1,12 @@
+[versions]
+micronaut = "4.7.10"
+micronaut-fuzzing = "0.1.7"
+
+[libraries]
+micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut" }
+micronaut-fuzzing-api = { module = "io.micronaut.fuzzing:micronaut-fuzzing-api", version.ref = "micronaut-fuzzing" }
+micronaut-fuzzing-runner = { module = "io.micronaut.fuzzing:micronaut-fuzzing-runner", version.ref = "micronaut-fuzzing" }
+micronaut-fuzzing-annotation-processor = { module = "io.micronaut.fuzzing:micronaut-fuzzing-annotation-processor", version.ref = "micronaut-fuzzing" }
+
+[plugins]
+micronaut-jazzer-plugin = { id = "io.micronaut.fuzzing.jazzer", version.ref = "micronaut-fuzzing" }
