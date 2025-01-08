@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
 
-    implementation("io.netty:netty-bom:" + nettyVersionFromEnv.orElse("4.1.116.Final"))
+    implementation(platform("io.netty:netty-bom:" + nettyVersionFromEnv.orElse("4.1.116.Final").get()))
     implementation("io.netty:netty-codec-http")
 
     implementation(libs.micronaut.fuzzing.api)
