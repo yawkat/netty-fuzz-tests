@@ -17,16 +17,13 @@
 package io.netty.handler.codec.http;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
-import io.micronaut.fuzzing.Dict;
 import io.micronaut.fuzzing.FuzzTarget;
 import io.micronaut.fuzzing.HttpDict;
 import io.micronaut.fuzzing.runner.LocalJazzerRunner;
-import io.netty.handler.ByteSeparator;
 import io.netty.handler.HandlerFuzzerBase;
 
 @FuzzTarget
 @HttpDict
-@Dict(ByteSeparator.SEPARATOR)
 public class HttpRequestDecoderFuzzer extends HandlerFuzzerBase {
     {
         channel.pipeline().addLast(new HttpRequestDecoder());

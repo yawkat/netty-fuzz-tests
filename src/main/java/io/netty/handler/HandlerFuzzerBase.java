@@ -18,26 +18,29 @@ package io.netty.handler;
 
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import io.micronaut.fuzzing.Dict;
+import io.micronaut.fuzzing.util.ByteSplitter;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 
 /**
  * Base class for fuzzing the input of an inbound handler. Will report exceptions thrown by the handler.
  */
+@Dict(HandlerFuzzerBase.SEPARATOR)
 public abstract class HandlerFuzzerBase {
+    static final String SEPARATOR = "SEP";
+    static final ByteSplitter SPLITTER = ByteSplitter.create(SEPARATOR);
+
     protected final EmbeddedChannel channel = new EmbeddedChannel();
 
     public void test(FuzzedDataProvider provider) {
-        ByteBuf joint = channel.alloc().buffer(provider.remainingBytes());
-        joint.writeBytes(provider.consumeRemainingAsBytes());
-        ByteSeparator.forEachPiece(joint, msg -> {
-            if (channel.isOpen()) {
-                channel.writeInbound(msg);
-            } else {
-                msg.release();
-            }
-        });
+        byte[] allBytes = provider.consumeRemainingAsBytes();
+        ByteSplitter.ChunkIterator itr = SPLITTER.splitIterator(allBytes);
+        while (itr.hasNext() && channel.isOpen()) {
+            itr.proceed();
+            ByteBuf buffer = channel.alloc().buffer(itr.length());
+            buffer.writeBytes(allBytes, itr.start(), itr.length());
+            channel.writeInbound(buffer);
+        }
         channel.finishAndReleaseAll();
         channel.checkException();
     }
