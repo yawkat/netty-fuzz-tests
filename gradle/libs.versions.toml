@@ -1,6 +1,6 @@
 [versions]
 micronaut = "4.7.10"
-micronaut-fuzzing = "0.1.7"
+micronaut-fuzzing = "0.1.8"
 
 [libraries]
 micronaut-inject-java = { module = "io.micronaut:micronaut-inject-java", version.ref = "micronaut" }
