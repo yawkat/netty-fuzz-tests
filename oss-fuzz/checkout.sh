@@ -2,4 +2,5 @@
 
 set -e
 
-git clone --depth=1 https://github.com/netty/netty.git
+# TODO
+git clone --depth=1 -b oss-fuzz https://github.com/yawkat/netty.git
