@@ -1,6 +1,8 @@
 package io.netty.handler;
 
+import com.code_intelligence.jazzer.api.BugDetectors;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
+import com.code_intelligence.jazzer.api.SilentCloseable;
 import io.micronaut.fuzzing.Dict;
 import io.micronaut.fuzzing.FuzzTarget;
 import io.micronaut.fuzzing.runner.LocalJazzerRunner;
@@ -30,6 +32,7 @@ import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
 import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
 import io.netty.incubator.channel.uring.IOUringSocketChannel;
 
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
@@ -54,45 +57,47 @@ public class EchoHandlerFuzzer {
                     })
                     .bind("127.0.0.1", 0).sync().channel();
 
-            byte[] allBytes = data.consumeRemainingAsBytes();
-            CompositeByteBuf receivedBack = serverChannel.alloc().compositeBuffer();
+            try (SilentCloseable ignored = BugDetectors.allowNetworkConnections((host, port) -> host.equals("localhost") && port == ((InetSocketAddress) serverChannel.localAddress()).getPort())) {
+                byte[] allBytes = data.consumeRemainingAsBytes();
+                CompositeByteBuf receivedBack = serverChannel.alloc().compositeBuffer();
 
-            Channel clientChannel = new Bootstrap()
-                    .group(clientGroup)
-                    .channel(transport.clientChannel)
-                    .handler(new ChannelInboundHandlerAdapter() {
-                        @Override
-                        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                            receivedBack.addComponent(true, (ByteBuf) msg);
-                        }
-
-                        @Override
-                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                            if (evt instanceof ChannelInputShutdownEvent) {
-                                ctx.close(ctx.voidPromise());
+                Channel clientChannel = new Bootstrap()
+                        .group(clientGroup)
+                        .channel(transport.clientChannel)
+                        .handler(new ChannelInboundHandlerAdapter() {
+                            @Override
+                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                                receivedBack.addComponent(true, (ByteBuf) msg);
                             }
-                        }
-                    })
-                    .connect(serverChannel.localAddress())
-                    .sync().channel();
 
-            ByteBuf expected = clientChannel.alloc().buffer();
-            ByteSplitter.ChunkIterator itr = HandlerFuzzerBase.SPLITTER.splitIterator(allBytes);
-            while (itr.hasNext() && clientChannel.isOpen()) {
-                itr.proceed();
-                ByteBuf buffer = clientChannel.alloc().buffer(itr.length());
-                buffer.writeBytes(allBytes, itr.start(), itr.length());
-                expected.writeBytes(allBytes, itr.start(), itr.length());
+                            @Override
+                            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                if (evt instanceof ChannelInputShutdownEvent) {
+                                    ctx.close(ctx.voidPromise());
+                                }
+                            }
+                        })
+                        .connect(serverChannel.localAddress())
+                        .sync().channel();
 
-                clientChannel.writeAndFlush(buffer).sync();
+                ByteBuf expected = clientChannel.alloc().buffer();
+                ByteSplitter.ChunkIterator itr = HandlerFuzzerBase.SPLITTER.splitIterator(allBytes);
+                while (itr.hasNext() && clientChannel.isOpen()) {
+                    itr.proceed();
+                    ByteBuf buffer = clientChannel.alloc().buffer(itr.length());
+                    buffer.writeBytes(allBytes, itr.start(), itr.length());
+                    expected.writeBytes(allBytes, itr.start(), itr.length());
+
+                    clientChannel.writeAndFlush(buffer).sync();
+                }
+                ((SocketChannel) clientChannel).shutdownOutput(clientChannel.voidPromise());
+                clientChannel.closeFuture().await(1, TimeUnit.MINUTES);
+
+                if (!receivedBack.equals(expected)) {
+                    throw new AssertionError(receivedBack.toString(StandardCharsets.UTF_8));
+                }
+                receivedBack.release();
             }
-            ((SocketChannel) clientChannel).shutdownOutput(clientChannel.voidPromise());
-            clientChannel.closeFuture().await(1, TimeUnit.MINUTES);
-
-            if (!receivedBack.equals(expected)) {
-                throw new AssertionError(receivedBack.toString(StandardCharsets.UTF_8));
-            }
-            receivedBack.release();
         } finally {
             serverGroup.shutdownGracefully();
             clientGroup.shutdownGracefully();
