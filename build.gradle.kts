@@ -36,7 +36,7 @@ dependencies {
         implementation("io.netty:netty-tcnative:2.0.69.Final:linux-x86_64")
     }
     if (nettyIoUringVersionFromEnv.isPresent) {
-        implementation("io.netty.incubator:netty-incubator-transport-classes-io_uring:" + nettyTcnativeVersionFromEnv.get())
+        implementation("io.netty.incubator:netty-incubator-transport-classes-io_uring:" + nettyIoUringVersionFromEnv.get())
     } else {
         implementation("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.26.Final:linux-x86_64")
     }
