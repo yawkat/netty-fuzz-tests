@@ -26,7 +26,7 @@ dependencies {
     implementation(platform("io.netty:netty-bom:" + nettyVersionFromEnv.getOrElse("4.1.116.Final")))
     implementation("io.netty:netty-codec-http")
     if (nettyVersionFromEnv.isPresent) {
-        implementation("io.netty:netty-transport-classes-epoll::linux-x86_64")
+        implementation("io.netty:netty-transport-classes-epoll")
     } else {
         implementation("io.netty:netty-transport-native-epoll::linux-x86_64")
     }
