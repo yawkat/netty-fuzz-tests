@@ -13,7 +13,7 @@ pushd "netty-tcnative"
 popd
 
 pushd "netty-incubator-transport-io_uring"
-  ./mvnw install -DskipTests -Dcheckstyle.skip -Drevapi.skip
+  ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
 popd
 
 export OSSFUZZ_NETTY_VERSION=$(cd netty && ./mvnw org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)
