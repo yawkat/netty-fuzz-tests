@@ -7,12 +7,15 @@ cp -r netty netty-tcnative netty-incubator-transport-io_uring $WORK/
 cd $WORK
 
 pushd "netty"
-  ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
+#  ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
 popd
 
 pushd "netty-tcnative"
-  ./mvnw install -pl openssl-dynamic -am -DskipTests -Dcheckstyle.skip -Drevapi.skip
+#  ./mvnw install -pl openssl-dynamic -am -DskipTests -Dcheckstyle.skip -Drevapi.skip
 popd
+
+ls /usr/lib
+env
 
 pushd "netty-incubator-transport-io_uring"
   ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
