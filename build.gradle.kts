@@ -58,12 +58,6 @@ tasks.withType<PrepareClusterFuzzTask> {
     )
 }
 
-tasks.named<JazzerTask>("jazzer") {
-    // todo: fetch on-demand from gh releases
-    jazzerBinary = File("/home/yawkat/bin/jazzer/0.22.1/jazzer")
-    targets = listOf("io.netty.handler.ssl.SslHandlerFuzzer")
-}
-
 tasks.test {
     useJUnitPlatform()
 }
