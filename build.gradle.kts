@@ -55,7 +55,7 @@ tasks.withType<PrepareClusterFuzzTask> {
         "-XX:+ExitOnOutOfMemoryError",
         "-Djava.library.path=\$this_dir"
     )
-    jni.isEnabled = true
+    jni.enabled = true
 }
 
 tasks.test {
