@@ -1,4 +1,3 @@
-import io.micronaut.fuzzing.jazzer.JazzerTask
 import io.micronaut.fuzzing.jazzer.PrepareClusterFuzzTask
 
 plugins {
@@ -56,6 +55,12 @@ tasks.withType<PrepareClusterFuzzTask> {
         "-XX:+ExitOnOutOfMemoryError",
         "-Djava.library.path=\$this_dir"
     )
+    val sanitizer = providers.environmentVariable("SANITIZER").getOrElse("")
+    if (sanitizer == "address") {
+        additionalJazzerArgs = listOf("--asan")
+    } else if (sanitizer == "undefined") {
+        additionalJazzerArgs = listOf("--ubsan")
+    }
 }
 
 tasks.test {
