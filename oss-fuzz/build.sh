@@ -2,24 +2,16 @@
 
 set -e
 
-# todo: so we can observe intermediates
-cp -r netty netty-tcnative netty-incubator-transport-io_uring $WORK/
-cd $WORK
-
 # replace sanitizer flags to work with jazzer
 export SANITIZER_FLAGS=$(echo -n $SANITIZER_FLAGS | sed 's/-fsanitize=/-fsanitize=fuzzer-no-link,/')
 
 pushd "netty"
-#  ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
+  ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
 popd
 
 pushd "netty-tcnative"
-#  ./mvnw install -pl openssl-dynamic -am -DskipTests -Dcheckstyle.skip -Drevapi.skip
+  ./mvnw install -pl openssl-dynamic -am -DskipTests -Dcheckstyle.skip -Drevapi.skip
 popd
-
-# todo
-ls /usr/lib
-env
 
 pushd "netty-incubator-transport-io_uring"
   ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
