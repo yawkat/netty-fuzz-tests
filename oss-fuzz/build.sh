@@ -2,7 +2,9 @@
 
 set -e
 
-apt-get install -y autoconf automake libtool make tar libapr1-dev
+# so we can observe intermediates
+cp -r netty netty-tcnative netty-incubator-transport-io_uring $WORK/
+cd $WORK
 
 pushd "netty"
   ./mvnw install -Poss-fuzz -DskipTests -Dcheckstyle.skip -Drevapi.skip
